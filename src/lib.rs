@@ -1,7 +1,5 @@
-use std::{
-    sync::{mpsc, Arc, Mutex},
-    thread,
-};
+use std::thread;
+use std::sync::{mpsc, Arc, Mutex};
 
 pub struct ThreadPool {
     workers: Vec<Worker>,
@@ -11,11 +9,17 @@ pub struct ThreadPool {
 type Job = Box<dyn FnOnce() + Send + 'static>;
 
 impl ThreadPool {
+    /// Membuat ThreadPool baru.
+    ///
+    /// Ukuran adalah jumlah thread dalam pool.
+    ///
+    /// # Panics
+    ///
+    /// Fungsi ini akan panic jika ukuran kurang dari atau sama dengan nol.
     pub fn build(size: usize) -> ThreadPool {
         assert!(size > 0);
 
         let (sender, receiver) = mpsc::channel();
-
         let receiver = Arc::new(Mutex::new(receiver));
 
         let mut workers = Vec::with_capacity(size);
@@ -32,26 +36,28 @@ impl ThreadPool {
         F: FnOnce() + Send + 'static,
     {
         let job = Box::new(f);
-
         self.sender.send(job).unwrap();
     }
 }
 
 struct Worker {
     id: usize,
-    thread: thread::JoinHandle<()>,
+    thread: Option<thread::JoinHandle<()>>,
 }
 
 impl Worker {
     fn build(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Job>>>) -> Worker {
-        let thread = thread::spawn(move || {
-            while let Ok(job) = receiver.lock().unwrap().recv() {
-                println!("Worker {id} got a job; executing.");
+        let thread = thread::spawn(move || loop {
+            let job = receiver.lock().unwrap().recv().unwrap();
 
-                job();
-            }
+            println!("Worker {} got a job; executing.", id);
+
+            job();
         });
 
-        Worker { id, thread }
+        Worker {
+            id,
+            thread: Some(thread),
+        }
     }
 }
