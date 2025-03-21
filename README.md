@@ -7,6 +7,7 @@ Function `handle_connection` dalam `main.rs` memiliki peran untuk mencetak permi
 
 **Commit 2: Refleksi**  
 Modifikasi pada function `handle_connection` kini memungkinkan server untuk mengirimkan respons HTTP sederhana dengan status `200 OK`. Respons tersebut dilengkapi dengan data HTML, sehingga ketika permintaan berasal dari browser, pengguna dapat melihat hasilnya secara langsung. Untuk memastikan browser dapat memproses respon dengan benar, header `Content-Length` ditambahkan, yang berfungsi menunjukkan panjang body dalam HTTP Response. Implementasi ini memungkinkan pengguna melihat tampilan halaman yang disediakan oleh server langsung dari browser.
+![Commit 2 screen capture](/assets/images/commit2.png)
 
 **Commit 3: Refleksi**  
 Peningkatan lebih lanjut pada function `handle_connection` memungkinkan server merespons berdasarkan URI yang diminta. Jika permintaan yang diterima merupakan GET Request ke `/` dengan versi `HTTP/1.1`, server mengirimkan konten dari `hello.html`. Sebaliknya, untuk permintaan yang tidak sesuai dengan pola tersebut, server mengembalikan `404.html`. Proses penentuan ini dilakukan dengan mengevaluasi baris pertama dari request yang diterima. Implementasi ini menyerupai konsep routing sederhana, di mana server merespons berdasarkan URI yang diminta. Pada awalnya, kode yang dibuat memiliki duplikasi dalam proses penentuan file HTML yang dikembalikan, sehingga dilakukan refactoring dengan cara mengekstrak `status_line` serta nama file HTML ke dalam variabel sebelum dikirim sebagai respons.
